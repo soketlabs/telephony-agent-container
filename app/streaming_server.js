@@ -1,18 +1,16 @@
-import {createServer} from "http"
-import url from "url"
+import dotenv from "dotenv"
+import { createServer } from "http"
 import { WebSocketServer } from "ws"
-import {parse} from "url"
-import {parse as parseQuery} from "querystring"
+import { parse as parseUrl } from "url"
+import { parse as parseQuery } from "querystring"
 import { RealtimeClient, RealtimeUtils } from "@openai/realtime-api-beta"
-import { telephony_setup, addStream, toXML, createTelephonyEvent } from "../utils/telephony_setup"  
-import dotenv from 'dotenv'
+import { telephony_setup, addStream, toXML, createTelephonyEvent } from '../utils/telephony_setup.js'
+import data_config from '../data/config.json' with { type: "json" };
 
 dotenv.config({ override: true })
 
 // "statusCallbackUrl": "http://api.soket.ai:3389/status_callback",
 // "statusCallbackMethod": "POST"
-
-const data_config = require('./data/config.json');
 
 const telephony_attributes = telephony_setup()
 
@@ -43,7 +41,7 @@ const server = createServer((req, res) => {
     addStream(telephony_attributes.TELEPHONY_WS_STREAM_URL, telephony_attributes.streamParams)
     console.log("Sent reponse to user , method: "+ req.method)
     res.writeHead(200, { 'Content-Type': 'text/xml' })
-    res.end(toXML())
+    res.end(toXML(telephony_attributes))
 
   } else if(req.url === '/status_callback') {
 
@@ -60,7 +58,7 @@ wss.on('connection', async (ws, req) =>  {
 
   console.log("URL:", req.url)
 
-  const parsedUrl = parse(req.url);
+  const parsedUrl = parseUrl(req.url);
   const queryParams = parseQuery(parsedUrl.query);
 
   // Alternatively, using URLSearchParams:

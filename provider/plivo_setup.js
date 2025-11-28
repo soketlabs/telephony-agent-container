@@ -1,9 +1,10 @@
 import dotenv from 'dotenv'
 import plivo from "plivo"
+import { RealtimeUtils } from "@openai/realtime-api-beta"
 dotenv.config({ override: true })
 
 const TELEPHONY_PORT = process.env.PLIVO_PORT
-const TELEPHONY_WS_URL = process.env.TELEPHONY_WS_URL +":"+ TELEPHONY_PORT
+const TELEPHONY_WS_URL = process.env.PLIVO_WS_URL + ":" + TELEPHONY_PORT
 const TELEPHONY_STREAM_TAG = "/plivo_streamer"
 let TELEPHONY_WS_STREAM_URL = TELEPHONY_WS_URL + TELEPHONY_STREAM_TAG
 
@@ -16,7 +17,7 @@ var streamParams = {
     "keepCallAlive": true,
     "streamTimeout": "360",
 }
-function plivo_setup() {
+export function plivo_setup() {
     return {
         telephonyResponse,
         streamParams,
@@ -26,13 +27,12 @@ function plivo_setup() {
     }
 }
 
-function plivoAddStream(streamUrl, streamParams) {
-    plivoResponse.addStream(streamUrl, streamParams)
-    console.log("Sent reponse to user , method: "+ req.method)
+export function plivoAddStream(streamUrl, streamParams) {
+    telephonyResponse.addStream(streamUrl, streamParams)
+    console.log("Added Plivo stream: ", streamUrl)
 }
 
-function createPlivoEvent(audio){
-    // Implementation for creating Plivo event with audio
+export function createPlivoEvent(audio){
     var plivoEvent = {
         "event": "playAudio",
         "media": {
@@ -43,5 +43,3 @@ function createPlivoEvent(audio){
       }
     return plivoEvent;
 }
-
-export { plivo_setup, plivoAddStream, createPlivoEvent };
