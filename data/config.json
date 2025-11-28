@@ -12,8 +12,7 @@
             }
         },
         "provider_config": {
-            "provider": "plivo",
-            "number": "+test"
+            "provider": "plivo"
         }
     }
 }
