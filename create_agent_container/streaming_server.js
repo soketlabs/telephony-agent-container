@@ -5,9 +5,11 @@ import { parse as parseUrl } from "url"
 import { parse as parseQuery } from "querystring"
 import { RealtimeClient, RealtimeUtils } from "@openai/realtime-api-beta"
 import { telephony_setup, addStream, toXML, createTelephonyEvent } from '../utils/telephony_setup.js'
-import data_config from '../data/config.json' with { type: "json" };
+// import data_config from '../data/config.json'
+import {set_config} from '../controllers/create_agent.js'
 
 dotenv.config({ override: true })
+const data_config = global.data_config || data_config;
 
 // "statusCallbackUrl": "http://api.soket.ai:3389/status_callback",
 // "statusCallbackMethod": "POST"

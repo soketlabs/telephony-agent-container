@@ -43,3 +43,8 @@ export function createPlivoEvent(audio){
       }
     return plivoEvent;
 }
+
+export function getAgentPhoneNumber() {
+    return 
+    // return getNewNumber();
+}

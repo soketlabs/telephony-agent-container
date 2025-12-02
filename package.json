@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "@openai/realtime-api-beta": "github:soketlabs/openai-realtime-api-beta",
+    "dockernode": "^0.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "plivo": "^4.69.2",
