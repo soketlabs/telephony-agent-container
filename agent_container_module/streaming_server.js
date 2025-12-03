@@ -9,12 +9,54 @@ import { telephony_setup, addStream, toXML, createTelephonyEvent } from '../util
 import {set_config} from '../controllers/create_agent.js'
 
 dotenv.config({ override: true })
-const data_config = global.data_config || data_config;
+// const data_config = global.data_config || data_config;
+// Parse command-line args for --data-config='JSON' or --data-config-file=path
+const args = process.argv.slice(2);
+let data_config = null;
 
-// "statusCallbackUrl": "http://api.soket.ai:3389/status_callback",
-// "statusCallbackMethod": "POST"
+const cfgArg = args.find(a => a.startsWith('--data-config='));
+const cfgFileArg = args.find(a => a.startsWith('--data-config-file='));
 
-const telephony_attributes = telephony_setup()
+if (cfgArg) {
+  const val = cfgArg.split('=')[1];
+  try {
+    // Try parse as JSON string
+    data_config = JSON.parse(val);
+  } catch (e) {
+    // If not valid JSON, try treat as a filepath
+    try {
+      const { readFileSync } = await import('fs');
+      const raw = readFileSync(val, 'utf8');
+      data_config = JSON.parse(raw);
+    } catch (err) {
+      console.error('Failed to parse --data-config value as JSON or file:', err);
+      process.exit(1);
+    }
+  }
+} else if (cfgFileArg) {
+  const filePath = cfgFileArg.split('=')[1];
+  try {
+    const { readFileSync } = await import('fs');
+    const raw = readFileSync(filePath, 'utf8');
+    data_config = JSON.parse(raw);
+  } catch (err) {
+    console.error('Failed to read/parse --data-config-file:', err);
+    process.exit(1);
+  }
+} else if (process.env.DATA_CONFIG) {
+  try {
+    data_config = JSON.parse(process.env.DATA_CONFIG);
+  } catch (e) {
+    console.error('Failed to parse DATA_CONFIG env var:', e);
+    process.exit(1);
+  }
+} else {
+  console.error('No data config provided. Use --data-config=\'{"..."}\' or --data-config-file=path or set DATA_CONFIG env var.');
+  process.exit(1);
+}
+
+// Args requireed: session_config, telephony_attributes,  addStream, toXML, createTelephonyEvent
+const telephony_attributes = telephony_setup();
 
 const server = createServer((req, res) => {
 

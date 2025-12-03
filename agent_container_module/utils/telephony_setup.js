@@ -1,5 +1,5 @@
 import data_config from '../data/config.json' with { type: 'json' };
-import { plivo_setup, plivoAddStream, createPlivoEvent } from '../provider/plivo_setup.js'
+import { plivo_setup, plivoAddStream, createPlivoEvent } from '../create_agent_container/provider/plivo_setup.js'
 
 // console.log(data_config)
 

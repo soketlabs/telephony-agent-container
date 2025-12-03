@@ -1,11 +1,14 @@
 {
   "type": "module",
   "dependencies": {
+    "@docker/node-sdk": "^0.0.17",
     "@openai/realtime-api-beta": "github:soketlabs/openai-realtime-api-beta",
     "dockernode": "^0.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "plivo": "^4.69.2",
+    "tar-fs": "^3.1.1",
+    "uuid": "^13.0.0",
     "ws": "^8.18.0"
   },
   "scripts": {
