@@ -9,8 +9,9 @@
 # https://github.com/docker/awesome-compose
 services:
   server:
-    build:
-      context: .
+    image: test-telephony:v1
+    # build:
+    #   context: .
     env_file:
       .env
     ports:

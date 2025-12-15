@@ -11,7 +11,7 @@ ARG NODE_VERSION=25.2.1
 FROM node:${NODE_VERSION}-alpine
 
 # Use production node environment by default.
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 
 WORKDIR /usr/src/app
@@ -35,4 +35,4 @@ COPY . .
 EXPOSE 3389
 
 # Run the application.
-CMD npm start
+# CMD ["npm", "start"]
