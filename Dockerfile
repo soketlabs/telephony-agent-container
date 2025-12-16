@@ -35,4 +35,4 @@ COPY . .
 EXPOSE 3389
 
 # Run the application.
-# CMD ["npm", "start"]
+CMD ["npm", "start"]
