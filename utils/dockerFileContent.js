@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+const dockerFileContent = `# syntax=docker/dockerfile:1
 
 # Comments are provided throughout this file to help you get started.
 # If you need more help, visit the Dockerfile reference guide at
@@ -35,4 +35,7 @@ COPY . .
 EXPOSE 3389
 
 # Run the application.
-# CMD npm start
+
+`;
+
+export default dockerFileContent;
