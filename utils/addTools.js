@@ -1,73 +1,88 @@
-// client.addTool(
-  //     {
-  //       name: 'property_search',
-  //       description: 'Search for properties based on the location and budget of the user',
-  //       parameters: {
-  //         type: 'object',
-  //         properties: {
-  //           location: {
-  //             type: 'string',
-  //             description:
-  //               'The location of the user',
-  //           },
-  //           budget: {
-  //             type: 'string',
-  //             description: 'The budget of the user',
-  //           },
-  //         },
-  //         required: ['location', 'budget'],
-  //       },
-  //     },
-  //     async ({ location, budget }) => {
+export function registerRealtimeTools(client, context = {}) {
+  const { ws } = context;
 
-  //       let propOptions = [
-  //         `
-  //           24K Opula, पिंपरी Nilakh – 3BHK, 4BHK, rupees  "one cr eighty seven lakh"
-  //           Luxury fittings, designer sundecks, IGBC certified, eco-friendly, premium interiors.
-  //         `,
-  //         `
-  //           Life Republic, Punawale – 2BHK, 3BHK, rupees "sixy seven lakh" onwards
-  //           Large balconies, master suites, 20+ amenities, near Hinjewadi IT Park, designed for light & privacy.
-  //         `
-  //       ]
+  client.addTool(
+    {
+      name: "book_appointment",
+      description: "Books a medical appointment for the user.",
+      parameters: {
+        type: "object",
+        properties: {
+          patient_name: {
+            type: "string",
+            description: "Name of the patient booking the appointment"
+          },
+          doctor_name: {
+            type: "string",
+            description: "Name of the doctor for the appointment",
+            nullable: true
+          },
+          department: {
+            type: "string",
+            description:
+              "Department or specialty for the appointment (e.g., Cardiology, Dermatology)"
+          },
+          date: {
+            type: "string",
+            description: "Date of the appointment"
+          },
+          time: {
+            type: "string",
+            description: "Time of the appointment"
+          }
+        },
+
+        required: ["patient_name", "doctor_name", "department", "date", "time"]
+      }
+    },
+
+    async ({ patient_name, doctor_name, department, date, time }) => {
+      
+      console.log("🧰 Tool call detected → book_appointment");
+      console.log("📅 Booking appointment:", {
+        patient_name,
+        doctor_name,
+        department,
+        date,
+        time
+      });
+
+      const webhookUrl =
+        "https://bha1725.app.n8n.cloud/webhook/soket-trigger";
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            intent: "book_appointment",
+            patient_name,
+            doctor_name,
+            department,
+            date,
+            time
+          })
+        });
+
+        const result = await response.text();
+        console.log("📨 n8n Webhook Triggered:", result); 
+      } catch (err) {
+        console.error("❌ Error triggering n8n webhook:", err);
+      }
+
+      const confirmation = `✅ Appointment booked for ${patient_name} with Dr. ${doctor_name} in ${department} on ${date} at ${time}.`;
+
+      return { 
         
-  //       let randomIndex = Math.floor(Math.random() * propOptions.length);
-  //       let selectedProperty = propOptions[randomIndex];
-
-  //       console.log(selectedProperty)
-  //       return selectedProperty;
-  //     }
-  // );
-
-
-  // client.addTool(
-  //   {
-  //     name: 'call_end',
-  //     description: 'End the call once you are done with the conversation',
-  //     parameters: {
-  //       type: 'object',
-  //       properties: {
-  //         reason: {
-  //           type: 'string',
-  //           description:
-  //             'The reason to end the conversation',
-  //         },
-  //         summary: {
-  //           type: 'string',
-  //           description: 'Summary of the conversation',
-  //         },
-  //       },
-  //       required: ['reason', 'summary'],
-  //     },
-  //   },
-  //   async ({ reason, summary }) => {
-  //     console.log("Tool call triggered")
-  //     console.log(reason)
-  //     console.log(summary)
-  //     await new Promise(r => setTimeout(r, 1500));
-  //     client.disconnect()
-  //     ws.close()
-  //     return { ok: true };
-  //   },
-  //   true
-  // );
+        message: confirmation,
+        patient_name,
+        doctor_name,
+        department,
+        date,
+        time
+      };
+    }
+  );
+}

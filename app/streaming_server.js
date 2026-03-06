@@ -6,6 +6,7 @@ import { parse as parseQuery } from "querystring"
 import { RealtimeClient, RealtimeUtils } from "@openai/realtime-api-beta"
 import { telephony_setup, addStream, toXML, createTelephonyEvent } from '../utils/telephony_setup.js'
 import data_config from '../data/config.json' with { type: "json" };
+import { registerRealtimeTools } from '../utils/addTools.js'
 
 dotenv.config({ override: true })
 
@@ -21,6 +22,7 @@ const server = createServer((req, res) => {
     req.on('data', chunk => {
       body += chunk.toString();
     });
+  
     req.on('end', () => {
       try {
         const data = body;
@@ -72,6 +74,7 @@ wss.on('connection', async (ws, req) =>  {
     url: process.env.S2S_WS_URL,
     apiKey: process.env.OPENAI_API_KEY 
   })
+  registerRealtimeTools(client, { ws })
   // Relay: S2S -> Plivo
   client.realtime.on('close', () => ws.close())
   client.on('conversation.updated', ({item, delta}) => {
@@ -97,8 +100,6 @@ wss.on('connection', async (ws, req) =>  {
     if(!!ws)
       ws.send(JSON.stringify(telephonyEvent))
   })
-
-  
 
   // Relay: Plivo -> S2S
   const messageQueue = []
@@ -129,7 +130,14 @@ wss.on('connection', async (ws, req) =>  {
   try {
     console.log(`Connecting to S2S...`)
     await client.connect()
-    client.updateSession(session_config)
+    client.updateSession({
+      instructions: `
+        You are a medical appointment booking assistant.
+        When the user wants to book an appointment,
+        ALWAYS call the book_appointment tool.
+      `,
+      tools: "book_appointment",
+    })
     client.sendUserMessageContent([
       {
         type: `input_text`,

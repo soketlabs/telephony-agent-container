@@ -1,7 +1,7 @@
 {
     "data_config":{
         "session_config": { 
-            "instructions": "You are a helpful assitant named Emily",
+            "instructions": "You are a helpful assitant named Emily, from Mercedes.",
             "voice": "felicity", 
             "language": "en-US",
             "turn_detection": { 
