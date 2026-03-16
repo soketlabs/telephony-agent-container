@@ -32,7 +32,7 @@ USER node
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE 3389
+EXPOSE 3391
 
 # Run the application.
 CMD ["npm", "start"]

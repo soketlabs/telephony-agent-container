@@ -9,13 +9,13 @@
 # https://github.com/docker/awesome-compose
 services:
   server:
-    image: test-telephony:v1
-    # build:
-    #   context: .
+    # image: test-telephony:v1
+    build:
+      context: .
     env_file:
       .env
     ports:
-      - 3389
+      - 3391:3391
     volumes:
       - /Users/SId/workspace/tensorstudio/agent-create/data:/usr/src/app/data
 

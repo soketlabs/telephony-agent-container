@@ -1,60 +1,28 @@
 import dotenv from "dotenv"
-import { createServer } from "http"
 import { WebSocketServer } from "ws"
 import { parse as parseUrl } from "url"
 import { parse as parseQuery } from "querystring"
 import { RealtimeClient, RealtimeUtils } from "@openai/realtime-api-beta"
-import { telephony_setup, addStream, toXML, createTelephonyEvent } from '../utils/telephony_setup.js'
+import { telephony_setup, createTelephonyEvent } from '../utils/telephony_setup.js'
 import data_config from '../data/config.json' with { type: "json" };
 import { registerRealtimeTools } from '../utils/addTools.js'
 
 dotenv.config({ override: true })
 
-// "statusCallbackUrl": "http://api.soket.ai:3389/status_callback",
-// "statusCallbackMethod": "POST"
-
 const telephony_attributes = telephony_setup()
 
-const server = createServer((req, res) => {
+const wss = new WebSocketServer({ port: process.env.TELEPHONY_WS_TEST_PORT })
+console.log(`WebSocket server on port ${process.env.TELEPHONY_WS_TEST_PORT}`)
 
-  if (req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-  
-    req.on('end', () => {
-      try {
-        const data = body;
-        const params = new URLSearchParams(data);
-        const parsedData = Object.fromEntries(params);
-        console.log('Received POST data:', parsedData);
-      } catch (e) {
-        console.error('Error parsing POST data:', e);
-      }
-    });
-  }
-
-
-  if(req.url.match(/^\/answer.*\.xml$/)) {
-
-    console.log("Received request to answer.xml")
-
-    addStream(telephony_attributes.TELEPHONY_WS_STREAM_URL, telephony_attributes.streamParams)
-    console.log("Sent reponse to user , method: "+ req.method)
-    res.writeHead(200, { 'Content-Type': 'text/xml' })
-    res.end(toXML(telephony_attributes))
-
-  } else if(req.url === '/status_callback') {
-
-  }else {
-    console.log("Cant find: ", req.url)
-  }
+wss.on('listening', () => {
+  const addr = wss.address(); // { address: '::', family: 'IPv6', port: 1234 } or similar
+  console.log('WS server listening on:');
+  console.log('  address:', addr.address);
+  console.log('  port   :', addr.port);
+  console.log('  family :', addr.family);
 });
 
-
-const wss = new WebSocketServer({ noServer: true })
-
+console.log('Configured port:', wss.options.port);
 //connectionHandler
 wss.on('connection', async (ws, req) =>  {
 
@@ -74,7 +42,6 @@ wss.on('connection', async (ws, req) =>  {
     url: process.env.S2S_WS_URL,
     apiKey: process.env.OPENAI_API_KEY 
   })
-  registerRealtimeTools(client, { ws })
   // Relay: S2S -> Plivo
   client.realtime.on('close', () => ws.close())
   client.on('conversation.updated', ({item, delta}) => {
@@ -101,6 +68,8 @@ wss.on('connection', async (ws, req) =>  {
       ws.send(JSON.stringify(telephonyEvent))
   })
 
+  
+
   // Relay: Plivo -> S2S
   const messageQueue = []
 
@@ -111,9 +80,12 @@ wss.on('connection', async (ws, req) =>  {
     const data = JSON.parse(msg)
     
     if(data.event !== "media") {
-      console.log(data)
+      console.log('[internal] non-media event:', data)
       return
     }
+
+    // console.log('[internal] media received, connected:', client.isConnected(), 'queueLen:', messageQueue.length)
+
     if(!client.isConnected())
       messageQueue.push(RealtimeUtils.base64ToArrayBuffer(data.media.payload))
     else{ 
@@ -130,14 +102,24 @@ wss.on('connection', async (ws, req) =>  {
   try {
     console.log(`Connecting to S2S...`)
     await client.connect()
-    client.updateSession({
-      instructions: `
-        You are a medical appointment booking assistant.
-        When the user wants to book an appointment,
-        ALWAYS call the book_appointment tool.
-      `,
-      tools: "book_appointment",
+    // client.updateSession(session_config)
+    client.updateSession({ 
+      instructions: "You are a helpful assitant named Emily, from Mercedes",
+      // voice: "katie",
+      voice: "felicity", // Lara car insurance
+      // voice: "sara",
+      // voice: "shreyas",
+      language: "hi",
+      turn_detection: { 
+        type: 'server_vad', 
+        threshold: 0.2, 
+        prefix_padding_ms: 1000 ,
+        silence_duration_ms: 1000,
+      },
     })
+
+    // flush queue before sending the greeting
+    while (messageQueue.length) client.appendInputAudio(messageQueue.shift())
     client.sendUserMessageContent([
       {
         type: `input_text`,
@@ -154,18 +136,4 @@ wss.on('connection', async (ws, req) =>  {
   while(messageQueue.length)
     client.appendInputAudio(messageQueue.shift())
 
-})
-
-server.on('upgrade', (req, sock, head) => {
-  const { pathname } = new URL(req.url, telephony_attributes.TELEPHONY_WS_URL);
-
-  console.log("Upgrade path: ", pathname)
-
-  wss.handleUpgrade(req, sock, head, (ws) => {
-    wss.emit('connection', ws, req)
-  })
-})
-
-server.listen(telephony_attributes.TELEPHONY_PORT, () => {
-  console.log(`Running on port ${telephony_attributes.TELEPHONY_PORT} ...`)
 })

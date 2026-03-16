@@ -3,7 +3,7 @@
         "session_config": { 
             "instructions": "You are a helpful assitant named Emily, from Mercedes.",
             "voice": "felicity", 
-            "language": "en-US",
+            "language": "hi",
             "turn_detection": { 
                 "type": "server_vad", 
                 "threshold": 0.2, 

@@ -4,7 +4,8 @@ import { RealtimeUtils } from "@openai/realtime-api-beta"
 dotenv.config({ override: true })
 
 const TELEPHONY_PORT = process.env.PLIVO_PORT
-const TELEPHONY_WS_URL = process.env.PLIVO_WS_URL + ":" + TELEPHONY_PORT
+// const TELEPHONY_WS_URL = process.env.PLIVO_WS_URL + ":" + TELEPHONY_PORT
+const TELEPHONY_WS_URL = process.env.PLIVO_WS_URL
 const TELEPHONY_STREAM_TAG = "/plivo_streamer"
 let TELEPHONY_WS_STREAM_URL = TELEPHONY_WS_URL + TELEPHONY_STREAM_TAG
 
