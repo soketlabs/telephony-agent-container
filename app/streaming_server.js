@@ -96,27 +96,28 @@ wss.on('connection', async (ws, req) =>  {
     // console.log(data)
   })
 
-  let session_config =  data_config['session_config']
+  let session_config = data_config.session_config;
 
   // Connect to S2S
   try {
     console.log(`Connecting to S2S...`)
     await client.connect()
-    // client.updateSession(session_config)
-    client.updateSession({ 
-      instructions: "You are a helpful assitant named Emily, from Mercedes",
-      // voice: "katie",
-      voice: "felicity", // Lara car insurance
-      // voice: "sara",
-      // voice: "shreyas",
-      language: "hi",
-      turn_detection: { 
-        type: 'server_vad', 
-        threshold: 0.2, 
-        prefix_padding_ms: 1000 ,
-        silence_duration_ms: 1000,
-      },
-    })
+    await registerRealtimeTools(client)
+    client.updateSession(session_config)
+    // client.updateSession({ 
+    //   instructions: "You are a helpful assitant named Emily, from apollo hospital. You are talking to a patient on the phone and helping them book an appointment. You can ask for their name, preferred doctor, department, date and time for the appointment. Please be polite and professional.call the book_appointment tool once you have all the necessary information.",
+    //   // voice: "katie",
+    //   voice: "felicity", // Lara car insurance
+    //   // voice: "sara",
+    //   // voice: "shreyas",
+    //   language: "hi",
+    //   turn_detection: { 
+    //     type: 'server_vad', 
+    //     threshold: 0.2, 
+    //     prefix_padding_ms: 1000 ,
+    //     silence_duration_ms: 1000,
+    //   },
+    // })
 
     // flush queue before sending the greeting
     while (messageQueue.length) client.appendInputAudio(messageQueue.shift())

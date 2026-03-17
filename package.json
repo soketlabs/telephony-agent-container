@@ -1,9 +1,11 @@
 {
   "type": "module",
   "dependencies": {
+    "22": "^0.0.0",
     "@openai/realtime-api-beta": "github:soketlabs/openai-realtime-api-beta",
     "dotenv": "^16.6.1",
     "express": "^4.21.1",
+    "node": "^25.8.1",
     "plivo": "^4.69.2",
     "ws": "^8.18.0"
   },
